@@ -46,6 +46,13 @@ docker compose build --no-cache openclaw-gateway
 
 `1006 abnormal closure`, `1008 device signature expired` 에러 등 네트워크나 인증이 꼬였을 때 해결하는 명령어입니다.
 
+* **`unauthorized: device token mismatch` 에러 발생 시 대시보드 토큰 및 URL 재발급**
+  (명령어 실행 후 출력되는 `Token` 값을 대시보드 화면에 입력해 줍니다.)
+```bash
+docker compose run --rm openclaw-cli dashboard --no-open
+
+```
+
 * **현재 작동 중인 '진짜 토큰' 주소 발급** (대시보드 접속용)
 ```bash
 docker compose exec openclaw-gateway node dist/index.js dashboard --no-open
