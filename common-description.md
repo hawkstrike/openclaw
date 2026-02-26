@@ -90,6 +90,49 @@ docker compose exec openclaw-gateway node dist/index.js devices approve <request
 
 ---
 
+### 🚨 [완전 초기화] 기기 토큰 불일치 (Device Token Mismatch) 완벽 해결 가이드
+
+Docker로 OpenClaw 실행 시, `unauthorized: device token mismatch (rotate/reissue device token)` 에러가 반복 발생하며 연결에 실패할 때 인증 캐시를 강제로 초기화하는 방법입니다.
+
+**원인:** 도커 컨테이너 재시작/업데이트 과정에서 게이트웨이에 등록된 기기 목록과 내부 컨테이너에 저장된 인증 토큰 정보가 불일치하여 발생합니다.
+
+**1. OpenClaw 컨테이너 중지**
+```bash
+# docker-compose를 사용 중인 경우
+docker compose down
+
+# docker run으로 직접 실행한 경우
+# docker stop <컨테이너이름>
+```
+
+**2. 충돌을 일으키는 인증 캐시 파일 삭제**
+기본 볼륨 마운트 경로(`~/.openclaw`)에 남아있는 만료된 토큰 파일과 디렉터리를 강제로 삭제합니다.
+```bash
+rm -f ~/.openclaw/identity/device-auth.json
+rm -rf ~/.openclaw/devices/
+```
+
+**3. 컨테이너 재시작 및 백그라운드 실행**
+초기화된 상태로 컨테이너를 다시 실행하여 새로운 인증 프로세스를 진행합니다.
+```bash
+# docker-compose를 사용 중인 경우
+docker compose up -d
+
+# docker run으로 직접 실행한 경우
+# docker start <컨테이너이름>
+```
+
+**4. (선택) 게이트웨이 접속 토큰 재확인**
+인증 정보가 초기화되었으므로 대시보드 로그인 시 토큰을 다시 요구할 수 있습니다. 기존 토큰 값을 확인합니다.
+```bash
+cat ~/.openclaw/openclaw.json | grep token
+```
+
+**5. 조치 후 확인 사항**
+위 과정을 모두 마친 후, 브라우저에서 게이트웨이 대시보드(`http://127.0.0.1:18789`)에 접속하여 에러 없이 정상적으로 구동되는지 확인합니다.
+
+---
+
 ## 3. 🧠 AI 모델 확인 및 변경
 
 `Unknown model` 에러가 뜨거나 기본 모델을 교체할 때 사용합니다.
